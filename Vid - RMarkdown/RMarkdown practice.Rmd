@@ -1,0 +1,62 @@
+---
+title: "RMarkdown practice"
+author: "Andrew Gard"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palmerpenguins)
+library(knitr)
+```
+
+# Introduction
+
+Hi everybody! This is an RMarkdown document. You can do *italics* and **bold**, and include a [link](https://www.youtube.com/c/EquitableEquations).
+
+# R Code
+
+```{r our first chunk, eval=FALSE}
+values <- rnorm(5)
+values
+```
+
+We can also use echo to show or not show the code and results to show or not show the output. 
+
+# More text tools
+
+## subheadings
+
+Unordered lists:
+
+- first item
+
+- second item 
+
+Ordered lists:
+
+1. first
+
+2. second
+
+We can insert an image like this: ![alt text](rusty_logo.png){width="20%"}
+
+We can add citations^[footnotes]
+
+We can use math mode $\alpha \beta$ and so on.
+
+Finally, we can make nice tables. 
+
+```{r}
+penguins_sm <- head(penguins)
+kable(penguins_sm) # from the knitr package
+```
+
+See the RMarkdown cheat sheet and reference guide (help -> cheat sheets) for more!
+
+
+
+
+
