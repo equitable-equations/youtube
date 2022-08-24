@@ -1,5 +1,5 @@
 # Working with lists in R
-!["lists thumb.png"]("lists thumb.png")
+!["lists thumb.png"](lists thumb.png)
 
 [<img src="lists thumb.png" align="right" height="100" />]
 
