@@ -1,6 +1,6 @@
 # Working with lists in R
 
-![youtube thumbnail](lists_thumb.png){align="right" height="100"}
+[<img src="lists thumb.png" align="right" height="100" />][https://youtu.be/X8lNTDeiKiE]
 
 Hi everybody! In this folder, you'll find materials supporting my vid, **Lists in R**, which you can find at <https://youtu.be/X8lNTDeiKiE>. 
 
