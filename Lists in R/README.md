@@ -1,7 +1,7 @@
 # Working with lists in R
-!["lists thumb.png"](lists thumb.png)
+<img src="liststhumb.png" align="right" height="100" />
 
-[<img src="lists thumb.png" align="right" height="100" />]
+![lists](https://github.com/equitable-equations/youtube/blob/main/Lists%20in%20R/liststhumb.png)
 
 Hi everybody! In this folder, you'll find materials supporting my vid, **Lists in R**, which you can find at <https://youtu.be/X8lNTDeiKiE>. 
 
