@@ -1,5 +1,5 @@
 # Multiple regression in R: example
-[<img src="multiple regressoin thumb.png" align="right" height="100" />](<https://youtu.be/_NS-SMi21mA>)
+[<img src="multiple regression thumb.png" align="right" height="100" />](<https://youtu.be/_NS-SMi21mA>)
 
 Hi everybody! In this folder, you'll find materials supporting my vid, **Multiple regression in R: example**, which you can find at <https://youtu.be/_NS-SMi21mA>. 
 
