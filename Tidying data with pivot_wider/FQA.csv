@@ -1,0 +1,39 @@
+variable,value
+Assessment,Coyne Plot 4
+Date,1/1/12
+Site,Coyne Prairie
+FQA DB Region:,Missouri
+FQA DB Publication Year:,2015
+Practitioner:,Justin Thomas
+Private/Public:,Public
+Total Mean C:,4.2
+Native Mean C:,4.3
+Total FQI:,38.5
+Native FQI:,38.7
+Adjusted FQI:,42.2
+% C value 0:,7.1
+% C value 1-3:,31
+% C value 4-6:,50
+% C value 7-10:,11.9
+Native Tree Mean C:,4
+Native Shrub Mean C:,3.5
+Native Herbaceous Mean C:,4.4
+Total Species:,84
+Native Species:,81
+Non-native Species:,3
+Mean Wetness:,2.7
+Native Mean Wetness:,2.7
+Tree:,1
+Shrub:,2
+Vine:,0
+Forb:,47
+Grass:,26
+Sedge:,8
+Rush:,0
+Fern:,0
+Bryophyte:,0
+Annual:,17
+Perennial:,66
+Biennial:,1
+Native Annual:,17
+Native Perennial:,64
