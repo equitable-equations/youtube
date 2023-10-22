@@ -1,0 +1,5 @@
+# The log-normal distribution
+[<img src="lognormal thumb.png" align="right" height="100" />](<https://youtu.be/nGJtgFFcIxw>)
+
+Hi everybody! In this folder, you'll find materials supporting my vid, **The log-normal distributione**, which you can find at <https://youtu.be/nGJtgFFcIxw>. 
+
