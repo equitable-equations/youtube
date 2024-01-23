@@ -1,0 +1,78 @@
+---
+title: "Quarto demo"
+author: "Andrew Gard"
+date: "25 Jan 2024"
+format: 
+  html:
+    theme: lux
+    toc: true
+    toc-title: "It's my thing!"
+    fig-align: left
+  pdf: default
+editor: visual
+editor_options: 
+  chunk_output_type: console
+execute: 
+  echo: true
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+We can do *italics*, bulleted lists
+
+-   first
+
+-   second
+
+and many other things.
+
+![My logo](rusty_logo.png){fig-alt="A chi-squared distribution with rusty colors" fig-align="left" width="262"}
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+#| label: load packages
+#| echo: true
+#| output: false
+
+library(tidyverse)
+```
+
+## Include a plot
+
+```{r}
+#| label: fig-diamonds
+#| fig-cap: "A bar chart of diamond cuts"
+#| fig-alt: |
+#|   "more descriptive stuff here"
+#| out-width: 50%
+#| code-fold: true
+
+ggplot(diamonds, aes(x = cut)) + 
+  geom_bar()
+```
+
+## Using LaTeX
+
+We can put formulas inline like this: $\alpha$ We indent like this
+
+$$ \pi \in \mathbb{R}$$ Google for more info and specific symbols.
+
+## Using python
+
+```{python}
+x, y = 4, 7
+mtcars_py = r.mtcars
+print(mtcars_py)
+```
+
+```{r}
+library(reticulate)
+library(gt)
+mtcars_new <- py$mtcars_py
+head(mtcars_new) %>% gt()
+```
