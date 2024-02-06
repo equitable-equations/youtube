@@ -1,0 +1,36 @@
+---
+title: "LaTeX for R users"
+format: 
+  latex:
+    include-in-header: 
+      - text: \usepackage{physics}
+---
+ 
+## Using math & scientific notation in your docs
+
+Inline: $\alpha$
+
+Indented:
+$$\hat{y}_i = \beta_0 + \sum_{j=1}^p \beta_jx_{ji}$$
+Functions: $\sin x,\ \log_2{x},\hspace{.5cm} \sqrt[3]{x^2+1}$
+
+Fractions: $\frac{p}{q}$
+$$\left[\frac{\$5}{\left(x+\frac{1}{y}\right)}\right\}$$
+Changing faces: $\mathbb{R}, \mathcal{C}$. Also $\frac{\text{ordinary stuff}}{2}$
+
+A symbol from the physics package: $\pdv{x}$
+
+```{r}
+library(tidyverse)
+ggplot(mtcars, aes(x = mpg)) + 
+  geom_histogram()
+```
+
+Aligned equations:
+
+\begin{align*}
+(x + y)^2 &= x^2 + 2xy + y^2\\
+  &\ne x^2 + y^2
+\end{align*}
+
+
