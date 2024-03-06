@@ -1,0 +1,87 @@
+---
+title: "Decision trees"
+author: Andrew Gard
+date: 25 feb 2025
+format: 
+  revealjs:
+    footer: "Equitable equations: decision trees"
+    transition: slide
+    title-slide-attributes: 
+      data-background-image: background.jpg
+---
+
+```{r}
+#| label: setup
+
+library(tidyverse)
+library(gt)
+library(readxl)
+theme_set(theme_minimal())
+dt_example <- read_excel("dt_example.xlsx")
+```
+
+## {background-image=background.jpg}
+
+In this vid, we’ll manually construct a decision tree classifier using the following data set.
+
+:::: {.columns}
+
+::: {.column width="30%"}
+
+```{r}
+dt_example %>% 
+  gt()
+```
+
+:::
+
+::: {.column width="70%"}
+
+```{r}
+#| fig-height: 6
+
+ggplot(dt_example, aes(x, y, color = color)) +
+  geom_point(size = 7,
+             show.legend = FALSE) +
+  labs(x = NULL,
+       y = NULL) + 
+  theme(axis.text = element_text(size = 15,
+                                 face = "bold")) +
+  scale_color_manual(values = c("blue", "red"))
+```
+
+:::
+
+::::
+
+## {background-image=background.jpg}
+
+::: {.callout-tip title="Decision trees"}
+
+A **decision tree classifier** applies a divide-and-conquer algorithm to the training set, recursively splitting it into pieces that are as homogeneous as possible.
+
+:::
+
+. . .
+
+![](tree_plot.png){fig-align=center width="75%"}
+
+## {background-image=background.jpg}
+
+Here's how I made that plot:
+
+```{r}
+#| echo: true
+#| fig-align: center
+#| code-line-numbers: "|2-3|4-5|5-8"
+
+ggplot(dt_example, aes(x, y, color = color)) +
+  geom_point(size = 7,
+             show.legend = FALSE) +
+  labs(x = NULL,
+       y = NULL) + 
+  theme(axis.text = element_text(size = 15,
+                                 face = "bold")) +
+  scale_color_manual(values = c("blue", "red"))
+```
+
