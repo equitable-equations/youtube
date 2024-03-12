@@ -1,0 +1,71 @@
+---
+title: "Cross references"
+author: "Andrew Gard"
+number-sections: true
+format: html
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(gt)
+```
+
+## Images {#sec-im}
+
+![My logo](rusty_logo.png){width=60% #fig-logo}
+
+Reference: @fig-logo. We can reformat how this appears. For instance [-@fig-logo] or [Figgy @fig-logo]
+
+## Plots
+
+```{r}
+#| label: fig-msleep
+#| warning: false
+#| out-width: 60%
+
+qplot(msleep$sleep_total)
+```
+
+Reference: @fig-msleep.
+
+## Tables
+
+```{r}
+#| label: tbl-msleep
+#| tbl-cap: Sleepy time
+#| echo: false
+
+msleep %>% 
+  group_by(vore) %>% 
+  summarize(Count = n(), 
+            avg_sleep = mean(sleep_total,
+                             na.rm = TRUE)) %>% 
+  gt()
+```
+
+Reference: @tbl-msleep.
+
+## Callouts
+
+::: {.callout-note #nte-mynote}
+
+Check out this note!
+
+:::
+
+Reference: @nte-mynote
+
+## Equations
+
+$$ e = mc^2 $$ {#eq-rel}
+
+Reference: @eq-rel
+
+## Sections
+
+Reference: @sec-im
+
+
