@@ -1,0 +1,14 @@
+---
+title: "Quarto bibliographies"
+author: Andrew Gard
+format: html
+bibliography: my-bib.bib
+nocite: |
+  @*
+csl: elsevier-with-titles.csl
+---
+
+My reference: [@wickham2014tidy]
+
+
+
