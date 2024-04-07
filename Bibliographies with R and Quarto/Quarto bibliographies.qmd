@@ -9,6 +9,3 @@ csl: elsevier-with-titles.csl
 ---
 
 My reference: [@wickham2014tidy]
-
-
-
