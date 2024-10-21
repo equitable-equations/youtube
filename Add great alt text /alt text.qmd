@@ -1,0 +1,41 @@
+---
+title: "Writing good alt text: example"
+author: Andrew Gard
+format: html
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+library(modeldata)
+```
+
+```{r}
+#| fig-alt: A histogram showing the number of years survey respondents have been coding on the job. The peak is around 2 years with a large isolated spike at 20 years, the maximum value in the set.
+
+ggplot(stackoverflow, aes(x = YearsCodedJob)) +
+  geom_histogram(binwidth = 1,
+                 color = "black") +
+  labs(x = "Years coding on the job",
+       y = "Frequency") +
+  theme_minimal() 
+```
+
+
+```{r}
+#| warning: false
+#| fig-alt: A scatterplot showing the relationship between bill lengths and depths in antarctic penguins, colored by the three differen species. In each group, there is an upward trend, with Adelies tending to have the shortest bills.
+
+ggplot(penguins, aes(x = bill_depth_mm, 
+                     y = bill_length_mm, 
+                     color = species)) + 
+  geom_point() +
+  labs(x = "Bill depth (mm)", 
+       y = "Bill depth (mm)", 
+       color = "Species") +
+  scale_color_brewer(palette = "Dark2") +
+  theme_minimal()
+```
+
