@@ -321,10 +321,10 @@ ggplot(bar_data,
 # For export --------------------------------------------------------------
 
 
-ggplot(bar_data, 
-       aes(x = x, 
-           y = y, 
-           fill = label)) + 
+ggplot(bar_data,
+       aes(x = x,
+           y = y,
+           fill = label)) +
   geom_polygon(color = "black",
                linewidth = .1,
                show.legend = FALSE) +
@@ -334,7 +334,7 @@ ggplot(bar_data,
                 label = label),
             hjust = "right",
             size = 10) +
-  ylim(c(0, 26)) + 
+  ylim(c(0, 26)) +
   scale_x_continuous(expand = c(0,0)) +
   scale_fill_manual(values = data$color) +
   coord_radial(start = .02,
@@ -345,11 +345,12 @@ ggplot(bar_data,
   theme(plot.title = element_text(hjust = 0.5,
                                   face = "bold",
                                   size = 50),
-        text = element_text(family = "Charter")) 
+        text = element_text(family = "Charter"))
 
 ggsave("dubois25_gard.png",
        width = 22,
-       height = 24)
+       height = 24,
+       bg = "white")
 
 
 
