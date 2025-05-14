@@ -73,9 +73,9 @@ ggplot(movies, aes(x = rating_cat,
   geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha = .2) + 
   scale_x_discrete(labels = c("Fail", 
-                              "No two women", 
                               "No conversation", 
-                              "Only about men")) +
+                              "Only about men",
+                              "Pass")) +
   labs(x = "Bechdel test result",
        y = "Male age gap",
        title = "Something to talk about")
