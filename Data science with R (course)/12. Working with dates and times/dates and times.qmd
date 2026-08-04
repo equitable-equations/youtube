@@ -1,0 +1,115 @@
+---
+title: "Dates and times"
+author: Andrew Gard
+embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+theme_set(theme_minimal())
+
+optical <- read_csv("optical.csv")
+```
+
+## Dates
+
+Dates are best stored using the `Date` class, which `read_csv()` generally assigns when a set is imported. Consider `optical$dob`, for instance.
+
+```{r}
+glimpse(optical)
+```
+
+Internally, dates are stored as integers representing the number of days since 1 January 1970, as you can check using `as.numeric()` or `unclass()`. 
+
+```{r}
+unclass(optical$dob) |> head()
+```
+
+Dates can be subtracted to yield time differences, typically measured in days. 
+
+```{r}
+diff(optical$dob) 
+```
+
+## Parsing dates
+
+Often, imported data sets include strings that look like dates but aren't automatically stored that way. The `as.Date()` function isn't a particularly user-friendly way forward, so we recommend the `tidyverse` function `lubridate::mdy()` and its friends `ymd()`, `ydm()`, `myd()`, `dmy()`, and `dym()`. These functions do an excellent job of parsing a wide variety of dating conventions, so long as the order of the components is consistent.
+
+```{r}
+text_dates <- c("Aug 3, 2026",
+                "August 3 2026",
+                "8/3/2026",
+                "08-03-2026",
+                "080326")
+
+date_dates <- mdy(text_dates) 
+date_dates
+
+class(date_dates)
+```
+
+Dates are displayed in year-month-day format by default, which is ideal for sorting. If you need a different printing convention, use the `format()` function. 
+
+Dates can be built manually using `make_date()`, which is particularly useful when a dataset includes separate columns for `year`, `month`, and `day`. 
+
+```{r}
+make_date(year = 2026, 
+          month = 8,
+          day = 3)
+```
+
+## Extracting components
+
+Functions to extract date components all have logical names.
+
+```{r}
+weekdays(optical$dob) # base R
+
+year(optical$dob) # lubridate
+month(optical$dob)
+day(optical$dob) 
+```
+
+## Date-times
+
+Moments in time are identified using the `dttm` class. In the `optical` dataset, `appt_date` has this class. 
+
+```{r}
+glimpse(optical)
+```
+
+Date-times are relative to location. To be truly unambiguous, a time zone must be included. In general, R will default to UTC (also called Greenwich mean time), though there are cases where your machine's local time zone will be used instead. 
+
+The `tz()` function is used to extract or assign time zone information. 
+
+```{r}
+tz(optical$appt_date)
+tz(optical$appt_date) <- "America/Chicago"
+```
+
+Alternatively, you might want to convert times rather than just overwrite the location. Use `with_tz()` for this. 
+
+```{r}
+optical$appt_date |> head()
+with_tz(optical$appt_date, "UTC") |> head()
+```
+
+Use `OlsonNames()` to see a list of approximately 600 available zones, and `Sys.timezone()` to see which one your system is currently using. To see your machine's local time, use `Sys.time()`.
+
+## Visualization
+
+`ggplot` formats date-times logically in all plots. 
+
+```{r}
+#| message: false
+
+ggplot(optical, aes(x = appt_date)) + 
+  geom_histogram()
+```
+
+If you need to change the format of the labels, use `scale_x_date`.
+
+

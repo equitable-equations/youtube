@@ -1,0 +1,84 @@
+---
+title: "Grouped summaries"
+format: html
+embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+```
+
+Today we're summarizing the classic `iris` data set quantitatively. Learn more about the origins of this set with `?iris`. 
+
+The `summarize` command gives a one-row data frame with specified summary statistics about the target set.
+
+```{r}
+iris |> 
+  summarize(petal_length_avg = mean(Petal.Length),
+            petal_length_sd = sd(Petal.Length))
+```
+
+The `summarize` command gets more interesting when we use `.by` to obtain results at the group level.
+
+```{r}
+iris |> 
+  summarize(petal_length_avg = mean(Petal.Length),
+            petal_length_sd = sd(Petal.Length),
+            .by = Species)
+```
+
+This is equivalent to the older (but still useful) syntax
+
+```{r}
+#| eval: false
+
+iris |> 
+  group_by(Species) |> 
+  summarize(petal_length_avg = mean(Petal.Length),
+            petal_length_sd = sd(Petal.Length))
+```
+
+Here `group_by` just adds a grouping attribute to the set, which you can imagine like color-coding rows of your data set.
+
+```{r}
+iris |> 
+  group_by(Species) 
+```
+
+One advantage of the `group_by` syntax is that it allows grouping on the fly, whereas `.by` only accepts column names. 
+
+```{r}
+iris |> 
+  group_by(long_sepal = (Sepal.Length >= 6)) |> 
+  summarize(petal_length_avg = mean(Petal.Length),
+            petal_length_sd = sd(Petal.Length))
+```
+
+This is equivalent to:
+
+```{r}
+#| eval: false
+
+iris |> 
+  mutate(long_sepal = (Sepal.Length >= 6)) |> 
+  summarize(petal_length_avg = mean(Petal.Length),
+            petal_length_sd = sd(Petal.Length),
+            .by = long_sepal)
+```
+
+You can group by more than one variable at a time:
+
+```{r}
+iris |> 
+  mutate(long_sepal = (Sepal.Length >= 6)) |> 
+  summarize(petal_length_avg = mean(Petal.Length),
+            petal_length_sd = sd(Petal.Length),
+            .by = c(Species, 
+                    long_sepal))
+```
+
+The result is always ungrouped set.
+

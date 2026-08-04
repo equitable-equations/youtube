@@ -16,9 +16,9 @@ top_movie <- function(){
 top_movie()
 
 top_movie_newest <- tool(
-  .fun = top_movie,
-  .name = "top_movie",
-  .description = "Returns the most recently recorded top movie of the day as listed on boxofficemojo.com."
+  fun = top_movie,
+  name = "top_movie",
+  description = "Returns the most recently recorded top movie of the day as listed on boxofficemojo.com."
   )
 
 chat <- chat_anthropic(system_prompt = 
@@ -31,7 +31,7 @@ chat$chat("what is the most recent top movie?")
 chat$chat("what was the top movie on christmas of 2022?")
 
 
-top_movies_year <- function(year){
+top_movies <- function(year){
   url <- paste0("https://www.boxofficemojo.com/daily/", year)
   top_movie_df <- read_html(url) %>% 
     html_table() %>% 

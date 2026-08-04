@@ -1,0 +1,119 @@
+---
+title: "Mutating joins"
+format: html
+embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+
+msleep_animals <- data.frame(name = c("Cheetah", 
+                               "Dog", 
+                               "Cow",
+                               "Goat"),
+                      genus = c("Acinonyx",
+                                "Canis",
+                                "Bos",
+                                "Capri"))
+
+msleep_vore <- data.frame(name = c("Cheetah", 
+                                   "Cow",
+                                   "Goat",
+                                   "Brown bat"),
+                          vore = c("carni",
+                                   "herbi",
+                                   "herbi",
+                                   "insecti"))
+```
+
+Often our data is split between two data sets, as in the data sets `msleep_animals` and `msleep_vore`, both based on information from the `ggplot2::msleep` data set. You can find the code used to create these sets (ie, this Quarto document) on my website <https://equitableequations.com/>, which you should totally check out anyway.
+
+```{r}
+msleep_animals
+msleep_vore
+```
+
+It's natural to view the second set, `msleep_vore`, as including more information about observations in the first. We'd like to add this information to `msleep_animals`. While it is possible to do this with `mutate`, a simpler approach is to use `left_join`. 
+
+In addition to the two sets, we also specify the **key** column (or columns), the ones which identify observations in the two sets. The output of `left_join` adds all the non-key columns from the second set to the first while keeping observations consistent.
+
+```{r}
+msleep_animals |> 
+  left_join(msleep_vore,
+            by = "name")
+```
+
+The order in which the data sets are specified in `left_join` can be very important. If we reverse the roles of the sets above, for instance, we get a different result.
+
+```{r}
+msleep_vore |>  
+  left_join(msleep_animals, 
+            by = "name")
+```
+
+## More on key columns
+
+If we omit the `by` argument from `left_join`, R will use all columns that appear in both sets as keys. This is a so-called *natural join*. 
+
+```{r}
+msleep_animals |>  
+  left_join(msleep_vore)
+```
+
+I generally advise against taking advantage of this. It's too easy to overlook subtleties in the structure and names of columns in different data sets.
+
+In all of our examples so far, a single column with a common name sufficed to identify observations in both sets, but this frequently isn't the case. For instance, suppose the creator of our `msleep_vore` set chose to capitalize the title of the `name` column:
+
+```{r}
+msleep_vore2 <- msleep_vore |>  
+  rename(Name = name) 
+msleep_vore2
+```
+
+To combine these sets, a more complex `by` argument is needed within `left_join`.
+
+```{r}
+msleep_animals |>  
+  left_join(msleep_vore2, 
+            by = join_by(name == Name))
+```
+
+The argument of `join_by` is a vector, so if more than one column is needed to identify observations, you just need to add additional elements inside it. 
+
+## More complicated relationships
+
+Sometimes you'll have more than one observation in the second set for some of the corresponding observations in the first, or vice-versa. This is the case with the `babynames` and `applicants` sets in the `babynames` package.
+
+```{r}
+library(babynames)
+
+glimpse(applicants) # one row per year and gender
+glimpse(babynames) # many rows per year and gender
+```
+
+Notice how `left_join` handles each of these situations.
+
+```{r}
+applicants |> left_join(babynames,
+                        by = join_by(year, sex))
+
+babynames |> left_join(applicants,
+                       by = join_by(year, sex))
+```
+
+## Other mutating joins
+
+For most purposes, `left_join` is all you'll need, but sometimes you may have use for more specialized variations. 
+
+- `right_join` keeps only observations that exist in the second data set, adding columns from the first.
+
+- `full_join` keeps all observations that exist in either set (or both).
+
+- `inner_join` keeps **only** observations in the first set with a match in the second, performing a `filter` as well as a `mutate`.
+
+A second data set can be used to `filter` the primary set in several different ways. These so-called *filtering joins* will be covered next in this course.
+
+

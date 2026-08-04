@@ -1,0 +1,70 @@
+---
+title: "Grouped filters and mutates"
+format: html
+embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+```
+
+Today we're filtering rows and adding columns to data frames using groupwise operations. 
+
+Throughout, we'll be working with the classic `diamonds` data set, which loads with `tidyverse`. It includes information on nearly 54,000 round-cut diamonds. 
+
+For better printouts, let's eliminate all but three columns:
+
+```{r}
+diamonds_sm <- diamonds |> 
+  select(carat, 
+         cut, 
+         price)
+
+glimpse(diamonds_sm)
+```
+
+Both `filter` and `mutate` include an optional `.by` argument, which directs R to work in each group separately. For instance, we might add a column to the data set to keep track of the average diamond `price` for each level of the `cut` variable. 
+
+```{r}
+diamonds_sm |> 
+  mutate(mean_price_by_cut = mean(price),
+         .by = cut) |> 
+  head()
+```
+
+Similarly, we can keep only diamonds that are larger than their group means. 
+
+```{r}
+diamonds_filtered <- diamonds_sm |> 
+  filter(carat > mean(carat),
+         .by = cut) 
+
+glimpse(diamonds_filtered)
+```
+
+The older `group_by` syntax works equally well. The output of the next chunk is nearly identical to the previous:
+
+```{r}
+#| eval: false
+
+diamonds_filtered <- diamonds_sm |> 
+  group_by(cut) |> 
+  filter(carat > mean(carat)) 
+
+glimpse(diamonds_filtered) # note grouping persists
+```
+
+In general, I recommend using the shorter `.by` syntax in most cases, reserving `group_by` for situations where extra clarity is needed or where you need the grouping structure to persist across multiple function calls. See my video on grouped summaries for more on the distinction between `.by` and `group_by`. 
+
+Another very common data wrangling task is to identify the top observations in each group. For instance, what are the 2 most expensive diamonds for each cut? We accomplish this with `slice_max`. Sadly, here the grouping variable is specified with `by` rather than `.by`.  
+
+```{r}
+diamonds_sm |> 
+  slice_max(price, 
+            n = 2,
+            by = cut)
+```
+

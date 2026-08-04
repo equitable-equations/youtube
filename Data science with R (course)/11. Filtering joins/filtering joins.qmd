@@ -1,0 +1,107 @@
+---
+title: "Filtering joins"
+author: Andrew Gard
+format: html
+embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+
+msleep_animals <- data.frame(name = c("Cheetah",
+                                      "Dog",
+                                      "Cow",
+                                      "Goat"),
+                             genus = c("Acinonyx",
+                                       "Canis",
+                                       "Bos",
+                                       "Capri"))
+msleep_animals
+
+msleep_vore <- data.frame(name = c("Cheetah", 
+                                   "Cow",
+                                   "Goat",
+                                   "Brown bat"),
+                          vore = c("carni",
+                                   "herbi",
+                                   "herbi",
+                                   "insecti"))
+msleep_vore
+```
+
+Often our data is split between two data sets, as is the case with `msleep_animals` and `msleep_vore`, both based on information from the `ggplot2::msleep` data set. You can find the code used to create these sets (ie, this Quarto document) on my website <https://equitableequations.com/>, which you should totally check out anyway.
+
+Filtering joins remove observations from one data set based on whether or not they have matches in a second data set. Like `dplyr::filter`, they do not add or modify columns. 
+
+## The `semi_join` function
+
+`semi_join` retains only observations with a match in the secondary set. For instance, the following code keep only rows in `msleep_animals` that also appear in `msleep_vore`. This means omitting the dog. 
+
+```{r}
+msleep_animals |> 
+  semi_join(msleep_vore,
+            by = "name")
+```
+
+The `by` argument specifies how observations should be matched up (here, using the `name` column). This works exactly same way as it does for `left_join` and other mutating joins, including the default behavior when `by` is omitted.
+
+```{r}
+msleep_animals |> 
+  semi_join(msleep_vore)
+```
+
+When the key column has different names in the two sets, use `join_by`. The next chunk creates a new set, `msleep_animals2`, in which the `name` column name is capitalized, then performs the same `semi_join` as before
+
+```{r}
+msleep_animals2 <- msleep_animals |> 
+  rename("Name" = "name") 
+
+msleep_animals2 |> 
+  semi_join(msleep_vore,
+            by = join_by("Name" == "name"))
+```
+
+Within `join_by`, we specify the names of the corresponding columns, starting with the one used in the primary data set, separated by a double equal sign. 
+
+## The `anti_join` function
+
+To keep only observations that do **not** appear in a second data set, use `anti_join`. For instance, the next code chunk retains only the dog from `msleep_animals`.
+
+```{r}
+msleep_animals |> 
+  anti_join(msleep_vore,
+            by = "name")
+```
+
+When taken together, `semi_join` an `anti_join` include all rows from the original data set. 
+
+```{r}
+bind_rows(semi_join(msleep_animals,
+                    msleep_vore,
+                    by = "name"),
+          anti_join(msleep_animals,
+                    msleep_vore,
+                    by = "name"))
+```
+
+The output of the above chunk is just `msleep_animals` with the rows re-ordered. 
+
+## The `inner_join` function
+
+`inner_join` adds columns from a secondary data set to the target set, like `left_join`, while keeping only observations that also appear in the secondary set, like `semi_join`.
+
+```{r}
+msleep_animals |> 
+  inner_join(msleep_vore, 
+             by = "name")
+```
+
+While still considered a mutating join, `inner_join` performs a filter as well. 
+
+
+
+
+

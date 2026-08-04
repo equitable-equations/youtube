@@ -1,0 +1,120 @@
+---
+title: "Getting started with ggplot2"
+format: html
+embed-resources: true
+---
+
+To create a plot using `ggplot`, we need to specify several things:
+
+- the data set to be used
+
+- the variables (columns) in the plot and the dimensions (x-axis, y-axis, color, etc) used to represent them
+
+- the sort of plot (scatterplot, histogram, etc). 
+
+Notice how these things are specified in order in the following call. 
+
+```{r}
+library(ggplot2) 
+ggplot(penguins, aes(x = body_mass,
+                     y = bill_len)) + 
+  geom_point() 
+```
+
+Because the grammar of graphics is layered, we can specify more than one geom in the same plot. For instance,
+
+```{r}
+ggplot(penguins, aes(x = body_mass,
+                     y = bill_len)) +
+  geom_point() +
+  geom_smooth()
+```
+
+We control the appearance of the individual geoms by adding arguments inside their respective calls. 
+
+```{r}
+ggplot(penguins, aes(x = body_mass,
+                     y = bill_len)) + 
+  geom_point(color = "steelblue") +
+  geom_smooth(method = "lm",
+              se = FALSE,
+              color = "black")
+```
+
+Other useful arguments include shape, size, and alpha (opacity).
+
+The appearance of the overall plot is controlled by adding additional functions to the `ggplot` call. 
+
+
+```{r}
+ggplot(penguins, aes(x = body_mass,
+                     y = bill_len)) + 
+  geom_point(color = "steelblue") +
+  geom_smooth(method = "lm",
+              se = FALSE,
+              color = "black") +
+  labs(x = "Body mass (g)",
+       y = "Bill length (mm)",
+       title = "Antarctic penguins",
+       caption = "Source: Gorman, Williams, and Fraser") +
+  theme_minimal()
+```
+
+So far, color has been an absolute characteristic of the geoms. If we want it to be controlled by a categorical variable like `species`, it becomes an aesthetic.
+
+```{r}
+ggplot(penguins, aes(x = body_mass,
+                     y = bill_len,
+                     color = species)) + 
+  geom_point() +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  labs(x = "Body mass (g)",
+       y = "Bill length (mm)",
+       title = "Antarctic penguins",
+       caption = "Source: Gorman, Williams, and Fraser") +
+  theme_minimal()
+```
+
+The default color palette isn't very accessible. Let's swap it out.
+
+```{r}
+ggplot(penguins, aes(x = body_mass,
+                     y = bill_len,
+                     color = species)) + 
+  geom_point() +
+  geom_smooth(method = "lm",
+              se = FALSE) +
+  labs(x = "Body mass (g)",
+       y = "Bill length (mm)",
+       title = "Antarctic penguins",
+       caption = "Source: Gorman, Williams, and Fraser") +
+  theme_minimal() +
+  scale_color_brewer(palette = "Dark2")
+```
+
+The scatterplot is the go-to when visualizing 2 quantitative variables, but there are many other possibilities, including `geom_line`. The cheat sheet in the help menu shows many more.
+
+For a single quantitative variable, the usual choice is the histogram. For a single categorical variable, it's the bar chart.
+
+```{r}
+ggplot(penguins, aes(x = body_mass)) + 
+  geom_histogram()
+
+ggplot(penguins, aes(x = species)) + 
+  geom_bar(fill = "steelblue")
+```
+
+Finally, the boxplot is a good way to display one categorical and one quantitative variable.
+
+```{r}
+ggplot(penguins, aes(x = species,
+                     y = body_mass)) + 
+  geom_boxplot()
+```
+
+```{r}
+ggplot(penguins, aes(y = species,
+                     x = body_mass)) + 
+  geom_boxplot()
+```

@@ -1,0 +1,113 @@
+---
+title: "Single-variable plots in R"
+format: html
+embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse) # loads ggplot2
+```
+
+In this vid, we'll use the `diamonds` data set to practice single-variable plots using the `ggplot` function.
+
+## One categorical variable
+
+The go-to plot for a single categorical variable is the bar chart. 
+
+```{r}
+ggplot(diamonds,
+       aes(x = cut)) +
+  geom_bar() 
+```
+
+Adding color:
+
+```{r}
+ggplot(diamonds,
+       aes(x = cut)) +
+  geom_bar(fill = "limegreen",
+           color = "darkgreen") +
+  theme_minimal()
+```
+
+Reverse the orientation:
+
+```{r}
+ggplot(diamonds,
+       aes(y = cut)) +
+  geom_bar(fill = "limegreen",
+           color = "darkgreen") +
+  theme_minimal()
+```
+
+Order the factor levels by frequency:
+
+```{r}
+ggplot(diamonds,
+       aes(x = fct_infreq(cut))) +
+  geom_bar(fill = "limegreen",
+           color = "darkgreen") +
+  theme_minimal()
+```
+
+Fix labels:
+
+```{r}
+ggplot(diamonds,
+       aes(x = fct_infreq(cut))) +
+  geom_bar(fill = "limegreen",
+           color = "darkgreen") +
+  labs(x = "Cut",
+       y = "Count",
+       title = "Fair cut diamonds are rare") +
+  theme_minimal()
+```
+
+See my vid on pie charts [here](https://youtu.be/ueLozxgEnDc). Use them with extreme care!
+
+## One quantitative variable
+
+The go-to plot for a single quantitative variable is the histogram. 
+
+```{r}
+ggplot(diamonds,
+       aes(x = price)) +
+  geom_histogram()
+```
+
+Change the number of bins:
+
+```{r}
+ggplot(diamonds,
+       aes(x = price)) +
+  geom_histogram(binwidth = 1000,
+                 boundary = 0) + # or bins 
+  theme_minimal()
+```
+
+Change to a frequency polygon:
+
+```{r}
+ggplot(diamonds,
+       aes(x = price)) +
+  geom_freqpoly(binwidth = 1000, 
+                 boundary = 0) +
+  theme_minimal()
+```
+
+A density plot:
+
+```{r}
+theme_set(theme_minimal())
+
+ggplot(diamonds,
+       aes(x = price)) +
+  geom_density(fill = "#5798A6",
+               linewidth = .2)
+```
+
+For very small data sets, you can also consider `geom_dotplot`. 
+

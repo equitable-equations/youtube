@@ -1,0 +1,57 @@
+---
+title: "Introducing the pipe"
+author: Andrew Gard
+format: html
+embed-resources: true
+---
+
+```{r}
+#| message: false
+
+library(tidyverse)
+```
+
+Often in R, we need to perform multiple operations on the same data set. Code can get messy fast. 
+
+```{r}
+head(mutate(select(filter(penguins, species == "Gentoo"), species, body_mass), body_mass_lb = body_mass * .002204623), n = 10)
+```
+
+There are lots of ways to make this chunk clearer, but by far the best option is the pipe operator `|>`, which passes the object on its left to the function on its right as the first argument. 
+
+```{r}
+penguins |>  
+  filter(species == "Gentoo") |>  
+  select(species, body_mass) |>  
+  mutate(body_mass_lb = body_mass * .002204623) |>  
+  head(n = 10)
+```
+
+Code written with the pipe can often be read as a sentence. "Take the penguins set, filter it to retain only gentoos, then select the species and body_mass variables, then add a column showing body mass in pounds, and then display the first 10 rows of the set."
+
+Most major `tidyverse` functions (and many non-`tidyverse` ones) take a data set as the first argument and return a data set at the end, so the pipe is useful in most function calls.
+
+The pipe was added to base R in version 4.1.0. Prior to that, the `magrittr` pipe, `%>%`, was universal. It still loads with `tidyverse`. The following code is equivalent to the chunks above.
+
+```{r}
+#| eval: false
+
+penguins %>%  
+  filter(species == "Gentoo") %>%  
+  select(species, body_mass) %>%  
+  mutate(body_mass_lb = body_mass * .002204623) %>%  
+  head(n = 10)
+```
+
+In general, you should start a new line after a pipe, writing one function per line. For other best-practices, see the tidyverse style guide at <https://style.tidyverse.org/pipes.html>.
+
+It's possible (though less common) to pipe into other arguments than the first.
+
+```{r}
+penguins |> 
+  lm(body_mass ~ bill_len + species,
+     data = _)
+```
+
+
+

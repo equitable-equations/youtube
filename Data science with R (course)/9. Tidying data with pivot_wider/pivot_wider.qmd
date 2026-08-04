@@ -1,0 +1,111 @@
+---
+title: "Tidying data: pivot_wider"
+format: html
+embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+library(GLMsData)
+data(blocks)
+```
+
+
+## Tidy data
+
+All the major functions in the `ggplot2` and `dplyr` packages (among many others) assume that your data is in a **tidy** format, meaning that:
+
+-   each data set holds one and only one type of observation
+
+-   each column holds one and only one variable
+
+-   each row holds one and only one observation
+
+When a set doesn't have these properties, we begin by reshaping it. Many of the best tools for doing this are included in the `tidyr` package, including `pivot_wider`, which is useful when variable names are found in the cells of a spreadsheet
+
+## The `blocks` dataset 
+
+The `GLMsData::blocks` set includes data from a block-stacking experiment in 1931 in which 25 children stacked 2 sorts of blocks in two trials each. Currently, each row represents one child in one trial with one shape, which is logical for many purposes.
+
+```{r}
+glimpse(blocks) 
+```
+
+Sometimes, however, we might need to consider an observation to consist of a single child (25 observations total) or a single child on a single trial (50 observations total). In these cases, we expect separate columns for each trial (both examples) and possibly for each shape as well (first example only).
+
+## How to `pivot_wider`
+
+To pivot a too-long data set like this, we need to specify 3 things:
+
+- the variables (columns) that uniquely identify observations.
+
+- The column(s) whose cells currently contain variable names
+
+- The column(s) whose cells currently contain the corresponsing variable values.
+
+The following chunk reshapes `blocks` so that each child represents a single observation. This means that `Trial` and `Shape` are no longer values of variables that help identify observations. Instead, their values should be incorporated into column names, like so:
+
+```{r}
+blocks_kids <- blocks |> 
+  pivot_wider(id_cols = Child, 
+              names_from = c(Trial, Shape),
+              values_from = c(Number, Time))
+glimpse(blocks_kids)
+```
+
+## Another `blocks` pivot
+
+The following chunk reshapes `blocks` so that observations are defined to be a single child stacking a single shape of block, so `Trial` is no longer an identifying variable. 
+
+```{r}
+blocks_kidshape <- blocks |> 
+  pivot_wider(id_cols = c(Child, Shape), 
+              names_from = Trial,
+              values_from = c(Number, Time))
+glimpse(blocks_kidshape)
+```
+
+There are many optional arguments that may be helpful in obtaining more descriptive column names, including `names_sep`.
+
+```{r}
+blocks_kidshape <- blocks |> 
+  pivot_wider(id_cols = c(Child, Shape), 
+              names_from = Trial,
+              values_from = c(Number, Time),
+              names_sep = "_Trial_")
+glimpse(blocks_kidshape)
+```
+
+## A dumbbell plot
+
+As an application of this, we might want to create a dumbbell plot comparing the number of cylindrical blocks stacked in the first vs second trial. 
+
+```{r}
+blocks_kidshape |> 
+  filter(Shape == "Cylinder") |> 
+  ggplot() + 
+  geom_segment(aes(x = Number_Trial_1, 
+                   y = Child, 
+                   xend = Number_Trial_2,
+                   yend = Child)) + 
+  geom_point(aes(x = Number_Trial_1, 
+                 y = Child,
+                 color = "Trial 1"),
+             size = 2.5) +
+  geom_point(aes(x = Number_Trial_2, 
+                 y = Child,
+                 color = "Trial 2"),
+             size = 2.5) +
+  labs(x = "Number stacked",
+       color = NULL,
+       title = "Stack 'em to the heavens") +
+  scale_color_brewer(palette = "Dark2") +
+  theme_minimal()
+```
+
+
+
+

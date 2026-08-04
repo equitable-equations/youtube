@@ -1,0 +1,113 @@
+---
+title: "Quantitative vs categorical plots with ggplot2"
+format: html
+embed-resources: true
+execute:
+  warning: false
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+
+theme_set(theme_minimal())
+```
+
+The simplest way to plot a quantitative variable vs a categorical one is with a boxplot. 
+
+```{r}
+ggplot(penguins, aes(x = species, 
+                     y = body_mass)) +
+  geom_boxplot()
+```
+
+An improved boxplot:
+
+```{r}
+ggplot(penguins, aes(x = species, 
+                     y = body_mass,
+                     fill = species)) +
+  geom_boxplot(outliers = FALSE) +
+  geom_jitter(alpha = .3) + 
+  labs(x = "Species",
+       y = "Body mass (g)",
+       caption = "Source: Gorman, Williams, and Frazier") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(legend.position = "none")
+```
+
+For variety, we can consider violin plots and bar charts. Use the latter judiciously. 
+
+```{r}
+ggplot(penguins, aes(x = species, 
+                     y = body_mass,
+                     fill = species)) +
+  geom_violin() +
+  labs(x = "Species",
+       y = "Body mass (g)",
+       caption = "Source: Gorman, Williams, and Frazier") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(legend.position = "none")
+```
+
+```{r}
+penguins_table <- penguins %>% 
+  summarize(avg_mass = mean(body_mass, 
+                            na.rm = TRUE),
+            .by = species)
+penguins_table
+
+ggplot(penguins_table, aes(x = species, 
+                           y = avg_mass,
+                           fill = species)) +
+  geom_col() +
+  labs(x = "Species",
+       y = "Avg. body mass (g)",
+       caption = "Source: Gorman, Williams, and Frazier") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(legend.position = "none")
+```
+
+Another option is to create a single-variable quantitate plot and then color it using the categorical variable. 
+
+```{r}
+ggplot(penguins, aes(x = body_mass,
+                     fill = species)) + 
+  geom_histogram() +
+  labs(x = "Body mass (g)",
+       fill = "Species",
+       caption = "Source: Gorman, Williams, and Frazier") +
+  scale_fill_brewer(palette = "Dark2") 
+```
+
+A density plot can be a good option when the overlap between groups is minimal (not the case here).
+
+```{r}
+ggplot(penguins, aes(x = body_mass,
+                     fill = species)) + 
+  geom_density(alpha = .5)  +
+  labs(x = "Body mass (g)",
+       fill = "Species",
+       caption = "Source: Gorman, Williams, and Frazier") +
+  scale_fill_brewer(palette = "Dark2") 
+```
+
+Bear in mind that these last plots assume that the reader will be able to see the color differences. This is often not be the case.
+
+One final option is to use faceting. 
+
+```{r}
+ggplot(penguins, aes(x = body_mass,
+                     fill = species)) + 
+  geom_histogram(show.legend = FALSE)  +
+  facet_wrap(~species) + 
+  labs(x = "Body mass (g)",
+       fill = "Species",
+       caption = "Source: Gorman, Williams, and Frazier") +
+  scale_fill_brewer(palette = "Dark2") 
+```
+
+This plot no longer relies on `color` as an identifying variable, though there are tradeoffs here as well. 
+
