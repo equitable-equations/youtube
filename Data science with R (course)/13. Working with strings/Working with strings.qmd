@@ -1,0 +1,132 @@
+---
+title: "Working with strings"
+author: Andrew Gard
+embed-resources: true
+---
+
+I use `tidyverse` tools when working with strings because the syntax is consistent, always placing the target string first. Everything presented here can also be done with base R functions like `grepl` and `gsub`.
+
+```{r}
+#| message: false
+
+library(tidyverse) # or just load stringr
+```
+
+In this vid, I'll cover 3 common tasks:
+
+- Finding and possibly replacing substrings within character vectors.
+
+- Splitting strings into pieces.
+
+- Combining strings
+
+We'll also talk a little about regular expressions (regex), but only a little.
+
+# The `sentences` vector
+
+The `stringr` package includes several example character vectors, including `sentences.` For brevity, we'll just use the first 10 elements.
+
+```{r}
+sentences <- sentences[1:10]
+sentences
+```
+
+# Finding and replacing substrings
+
+Use `str_detect()` to determine which elements of a character vector include a specified pattern.
+
+```{r}
+str_detect(sentences, "on")
+```
+
+Alternatively, use `str_subset()` to keep only elements of the vector that include the specified pattern.
+
+```{r}
+str_subset(sentences, "on")
+```
+
+To make substitutions within a string, use `str_replace()` or `str_replace_all()`. For instance,
+
+```{r}
+str_replace(sentences, 
+            "to",
+            "TO") # first occurrence only
+```
+
+All of these functions are case-sensitive, which explains the following output:
+
+```{r}
+str_replace_all(sentences, 
+                "the",
+                "THE") # all occurrences
+```
+
+If all you want to do is change capitalization, consider `tolower()`, `toupper()`, `str_to_sentence()` (for sentence case), or `str_to_title()` (for title case).
+
+## Splitting strings
+
+Use `str_split()` to break up strings at specified characters, like spaces. The output is a list.
+
+```{r}
+str_split(sentences, " ")
+```
+
+If you just have a single string and don't want a list, consider `str_split_1()` rather than `str_split()` and unlist()`. 
+
+```{r}
+str_split_1(sentences[1], "")
+```
+
+To extract only the $k^{th}$ word of a sentence, use `word()`. This function accepts only a single single string, so if you want to apply it to a character vector, you'll need to use `lapply()`, `map()`, or one of their friends.
+
+```{r}
+word(sentences[1], start = 2)
+
+map_chr(sentences, word, start = 2)
+```
+
+## Combining strings
+
+I still use the base R functions `paste()` and `paste0()` to combine strings, though `stringr::str_c` is great too.
+
+```{r}
+paste("Equitable", "Equations")
+
+paste("www", 
+      "equitableequations", 
+      "com", 
+      sep = ".")
+
+paste0("www.",
+       "equitableequations", 
+       ".com")
+```
+
+## Regular expressions
+
+Some characters have special meanings and are hard to search for. For instance, you might expect the following code to return only sentences whose last letter is "s", but this isn't the case.
+
+```{r}
+str_detect(sentences, "s.")
+```
+
+Some characters, including ".", "+", "*", "?", "^", "$", as well as parentheses, brackets, and braces, have special meanings when used for string matching. In these situations, R will interpret "." to mean "any character." While this prevents the last line of code from working as intended, it allows for more flexible matching.
+
+```{r}
+str_subset(sentences, "s.i")
+```
+
+To search text for a special character like ".", you need to precede it with two slashes.
+
+```{r}
+str_detect(sentences, "s\\.")
+```
+
+Use brackets to allow multiple options for a match.
+
+```{r}
+str_subset(sentences, "[Tt]he")
+```
+
+There are many, many more tools available.
+
