@@ -1,0 +1,143 @@
+---
+title: "pivot_longer"
+author: Andrew Gard
+format: 
+  html:
+    embed-resources: true
+---
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+```
+
+## Tidy data
+
+All the major functions in the `ggplot2` and `dplyr` packages (among many others) assume that your data is in a **tidy** format, meaning that:
+
+-   each data set holds one and only one type of observation
+
+-   each column holds one and only one variable
+
+-   each row holds one and only one observation
+
+When a set doesn't have these properties, we begin by reshaping it. Many of the best tools for doing this are included in the `tidyr` package, including `pivot_longer`.
+
+## Handling wide data formats
+
+Let's look at the `relig_income`. 
+
+```{r}
+glimpse(relig_income)
+```
+
+My goal is to generate a lollipop chart showing the number of agnostic respondents for each income level. For this, we will need columns representing income levels and counts for each religion. 
+
+This data is in a *wide* format. The current column names (except the first) are actually *values* of one of our variables (income level). The cells in those columns contain the values of the count variable. 
+
+To fix this, we need to say what the problem columns are, what the name of the variable corresponding to the column names should be, and what the name of the variable corresponding to the entries in the problem columns should be. 
+
+The primary tool for handling wide data sets is `tidyr::pivot_longer`. To use it, we specify these 3 things in order.
+
+```{r}
+relig_long <- relig_income |>  
+  pivot_longer(cols = -religion, 
+               names_to = "income",
+               values_to = "count") 
+
+glimpse(relig_long)
+```
+
+Now we remove all non-agnostics and generate a preliminary scatterplot of our data.
+
+```{r}
+relig_agn <- relig_long |> 
+  filter(religion == "Agnostic")
+  
+ggplot(relig_agn, aes(x = count,
+                      y = income)) + 
+  geom_point()
+```
+
+The next chunk generates a more attractive version of this.
+
+```{r}
+# put income levels in order
+
+relig_agn <- relig_agn |> 
+  mutate(income = fct_relevel(income, 
+                              "$100-150k",
+                              ">150k",
+                              after = Inf),
+         income = fct_relevel(income, 
+                              "Don't know/refused"))
+
+# Lollipop chart
+
+ggplot(relig_agn, aes(x = count,
+                      y = income)) + 
+  geom_point() +
+  geom_segment(aes(xend = 0,
+                   yend = income)) +
+  theme_minimal()
+```
+
+## Another example
+
+Wide data is very common in the wild. A somewhat more complicated example `tidyr::billboard`, which includes song rankings from the year 2000. 
+
+```{r}
+head(billboard)
+```
+
+Currently every row is a song, which is logical for many purposes. However, if we want to track the progress of songs over time, we'll need a `week` variable. Here's the simplest pivot to fix the problem.
+
+```{r}
+billboard_long <- billboard |> 
+  pivot_longer(cols = starts_with("wk"),
+               names_to = "week",
+               values_to = "rank")
+
+head(billboard_long, n = 10)
+```
+
+The output has a few problems. Each song currently has 76 rows, one for each week considered, even if it only charted once. Additionally, we'd prefer if the `week` column were numeric and didn't include the `wk` prefix. 
+
+```{r}
+billboard_long <- billboard |> 
+  pivot_longer(cols = starts_with("wk"),
+               names_to = "week",
+               names_prefix = "wk",
+               names_transform = list(week = as.integer),
+               values_to = "rank",
+               values_drop_na = TRUE)
+
+head(billboard_long, n = 10)
+```
+
+## More complicated pivots
+
+Untidy data can get very complicated. As a final example, consider the `anscombe` data set, which includes 4 very different sets with nearly identical correlations. 
+
+```{r}
+glimpse(anscombe)
+```
+
+To plot these, we need columns called `x`, `y`, and `set_number`, so the names in `anscombe` actually encode the values of *two* variables.
+
+```{r}
+anscombe |>
+  pivot_longer(
+    cols = everything(),
+    names_to = c(".value", "set"),
+    names_pattern = "(.)(.)")
+```
+
+I have a whole vid on `anscombe`. Check it out at <https://youtu.be/Wf21BVJZjEA>.
+
+
+
+
+

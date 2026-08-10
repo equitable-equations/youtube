@@ -1,0 +1,96 @@
+---
+title: "Data manipulation with R"
+format: html
+embed-resources: true
+---
+
+In this vid, we'll look at 4 key functions for data manipulation and organization in R. All come from the `dplyr` package, which is included in the `tidyverse` family. Throughout, we'll use the `diamonds` data set, also loads with `tidyverse`.
+
+```{r}
+library(tidyverse)
+glimpse(diamonds)
+```
+
+## Subsetting rows with `filter()`
+
+To subset rows, pass `dplyr::filter()` the data set and the conditions to be used, all separated by commas. Results are printed and only saved if assigned to a variable.
+
+```{r}
+filter(diamonds, 
+       cut == "Ideal",
+       carat >= 3)
+
+diamonds_nice <- filter(diamonds,
+                        carat >= 4 | cut == "Ideal")
+diamonds_nice
+```
+
+## Subsetting columns with `select()`
+
+To subset columns, pass `select()` the data set and the columns to be kept. Columns can be specified by name or number. They can also be moved or removed.
+
+```{r}
+select(diamonds, 
+       price, 
+       carat)
+
+select(diamonds, 
+      depth:z)
+
+select(diamonds,  
+       1:4) # not recommended
+
+select(diamonds, 
+       -c(x, y, z)) # remove columns
+
+select(diamonds,
+       starts_with("c")) # also `contains` and `ends_with`
+
+select(diamonds, 
+       carat, 
+       everything()) # moves carat to the start
+```
+
+## Reorganizing rows with `arrange()`
+
+To re-order rows, pass `arrange()` the data set and the names of the columns to organize by. Rows are arranged alphanumerically from lowest to highest.
+
+```{r}
+arrange(diamonds, 
+        carat, 
+        cut) 
+
+arrange(diamonds,
+        desc(carat)) # highest values first
+```
+
+## Adding and modifying columns with `mutate()`
+
+To add or modify a column, pass `mutate()` the data set and the definitions of the columns to be created/changed. As always, results aren't saved by default.
+
+```{r}
+mutate(diamonds, 
+       mass_g = carat * 0.2,
+       cut = tolower(cut))
+```
+
+## What they all have in common
+
+All the major `dplyr` functions have a few things in common:
+
+- The names are verbs. Functions *do* things.
+
+- The first argument is the data set acted upon.
+
+- Subsequent arguments say more specifically how to do the thing. 
+
+This common syntax makes data manipulation with `dplyr` much, much easier to learn.
+
+
+
+
+
+
+
+
+
