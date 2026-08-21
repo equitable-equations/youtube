@@ -1,0 +1,136 @@
+---
+title: "Regular expressions for R users"
+author: "Andrew Gard"
+format: html
+embed-resources: true
+---
+
+Regular expressions let you search and manipulate strings based on patterns rather than exact matches. 
+
+Throughout this vid, we'll make use of the `stringr` functions `str_subset`, `str_detect`, and `str_extract`, all of which are covered in a separate video. We'll also use the included character vectors `sentences` and `fruit`. 
+
+```{r}
+library(stringr)
+
+sentences <- sentences[1:10]
+sentences
+
+fruit
+str_subset(fruit, "berry")
+```
+
+## Matching special characters
+
+The following characters have special meanings and can't be searched literally.
+
+. \ | ( ) [ { ^ $ * + ?
+
+For instance, a dot matches with *any* character, which explains the following output.
+
+```{r}
+str_extract(sentences, ".")
+```
+
+In order to match these metacharacters, precede them with two slashes, like this:
+
+```{r}
+str_extract(sentences, "\\.")
+```
+
+## Position and relative position
+
+To specify that a substring comes at the beginning of a string, use `^`. To specify that it comes at the end, use `$`.
+
+```{r}
+str_subset(fruit, "^re")
+str_subset(fruit, "er$") # note order
+```
+
+## Character sets
+
+Use brackets to allow multiple options for the character to be matched.
+
+```{r}
+str_subset(sentences, "[oe]n")
+str_extract(sentences, "[oe]n")
+```
+
+Ranges of letters and numbers are allowed.
+
+```{r}
+str_subset(sentences, "[a-j]o")
+str_extract(sentences, "[a-j]o")
+```
+
+Inside of brackets, "^" represents negation.
+
+```{r}
+str_extract(sentences, "[^a-j]o")
+```
+
+## Character classes
+
+It's also possible to specify classes of characters. "\d" matches any digit and "\w" matches and word character (a-z, A-Z, 0-9, and underscore), while "\D" and "\W" will match anything *except* digits and word characters, respectively. Many other classes are available. Enter `?regex` for a full list. 
+
+## The role of `\` in Quarto
+
+Quarto doesn't render expressions like "\d"  in the last section properly because it interprets the slash as an escape character. To actually render this string, use "\\d" instead. 
+
+Similarly, to render a slash, use \\.
+
+## Matching whitespace
+
+Use `\\s` for space, `\\t` for tab, and `\\n` for a new line. 
+
+```{r}
+str_subset(sentences, "e\\sb")
+```
+
+## Repetition
+
+Use curly braces to indicate how many times in a row a character must appear.
+
+```{r}
+str_subset(sentences, "e{2}")
+```
+
+Use a "+" to indicate at least one occurrence, possibly more. 
+
+```{r}
+str_subset(sentences, "she+t")
+```
+
+To indicate a character is optional, use "?". For instance, the next command detects both "the" and "often".
+
+```{r}
+str_extract(sentences, "th?e")
+```
+
+Finally, "*" indicates an optional character that may occur more than once.
+
+```{r}
+str_extract(sentences, "she*")
+```
+
+Notice that these symbols come *after* the characters they refer to, unlike "\" which comes before.
+
+## Combining regex with `|`
+
+Use the pipe to indicate an "or" statement. Expressions of either side are grouped by default.
+
+```{r}
+str_subset(sentences, "chicken|hog")
+```
+
+You can still group using parentheses, though. 
+
+```{r}
+str_subset(sentences, "(chicken|hog)s")
+```
+
+## A small disclaimer
+
+When writing this document, I've prioritized the appearance of the .qmd file, not the rendered .html.
+
+
+
