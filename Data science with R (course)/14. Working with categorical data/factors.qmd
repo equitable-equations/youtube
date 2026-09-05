@@ -1,0 +1,154 @@
+---
+title: "Factors in R"
+author: Andrew Gard
+embed-resources: true
+---
+
+```{r}
+#| message: false
+
+library(tidyverse)
+theme_set(theme_minimal())
+
+library(readxl)
+scooby <- read_excel("scooby.xlsx") 
+
+scooby_sm <- scooby |> 
+  filter(format == "TV Series") |>  
+  select(title,  
+         date_aired,
+         imdb,
+         motive) 
+```
+
+Categorical variables (or *factors* as they are referred to when working in R) are variables that assign observations to specific groups. The possible values of a factor variable are called *levels*.
+
+## Factors, characters, and other types
+
+As a general rule, `tidyverse` functions treat character vectors as factors. 
+
+```{r}
+glimpse(scooby_sm)
+
+scooby_sm |> 
+  count(motive)
+```
+
+Use `as.factor()` to explicitly coerce variables to factors. This is particularly useful when category levels are numeric. 
+
+```{r}
+glimpse(mtcars)
+
+ggplot(mtcars, aes(x = am, 
+                   y = mpg)) + 
+  geom_boxplot() # not what we want
+
+mtcars2 <- mtcars |> 
+  mutate(am = as.factor(am)) 
+
+ggplot(mtcars2, aes(x = am, 
+                    y = mpg)) + 
+  geom_boxplot()
+```
+
+## Relabeling factors
+
+There are many options for changing the text used to label factor levels, but `fct_recode()` is a solid choice.
+
+```{r}
+mtcars2 <- mtcars2 |> 
+  mutate(am = fct_recode(am, 
+                         "automatic" = "0",
+                         "manual" = "1"))
+mtcars2 |> 
+  count(am)
+```
+
+Notice the syntax, "new_name" = "old_name", which is common in `tidyverse` R.
+
+When you have a large number of different factor levels, it may be helpful to lump the less common ones into an "other" category. For instance, the next chunk combines all categories with fewer than 20 occurrences.
+
+```{r}
+scooby_sm2 <- scooby_sm |> 
+  mutate(motive = fct_lump_min(motive,
+                               min = 20)) 
+scooby_sm2 |> 
+  count(motive) |> 
+  arrange(-n)
+```
+
+Also check out `fct_lump_n()` to specify the number of levels retained, `fct_lump_prop()` to lump low-percentage levels, and `fct_lump_lowfreq()` to try to force the new "Other" level to have lowest frequency. 
+
+## Rearranging levels
+
+Sometimes the order of factor levels matters. Use `fct_relevel()` to shift levels to the front.
+
+```{r}
+ggplot(scooby_sm2, 
+       aes(x = motive)) + 
+  geom_bar()
+
+scooby_sm3 <- scooby_sm2 |> 
+  mutate(motive = fct_relevel(motive,
+                              "Treasure",
+                              "Theft")) 
+
+ggplot(scooby_sm3, 
+       aes(x = motive)) + 
+  geom_bar()
+```
+
+Often, you just want to put the most common factor levels first. Use `fct_infreq()` to accomplish this.
+
+```{r}
+ggplot(scooby_sm2, aes(y = fct_infreq(motive))) + 
+  geom_bar()
+```
+
+You can also reverse the order of the factor levels with `fct_rev`.
+
+## Reordering levels using a second variable
+
+For some plots, it can be natural to order a categorical variable using a numeric one. For instance, in the next plot it would be preferable to show the various motives in increasing order of imdb ratings.
+
+```{r}
+#| warning: false
+
+ggplot(scooby_sm3, aes(x = motive,
+                       y = imdb)) + 
+  geom_boxplot()
+
+scooby_sm4 <- scooby_sm3 |> 
+  mutate(motive = fct_reorder(motive,
+                              imdb))
+
+ggplot(scooby_sm4, aes(x = motive,
+                       y = imdb)) + 
+  geom_boxplot()
+```
+
+By default, `fct_reorder` sorts using the median. You can specify a different function (like mean) by adding a `.fun` argument.
+
+## Ordered factors
+
+Occasionally you may encounter ordered factors, ones of class `ord`. For the most part, you can treat these like regular factors.
+
+```{r}
+glimpse(diamonds)
+diamonds |> 
+  count(cut)
+```
+
+Specifying that a factor is ordered can occasionally matter in modeling applications and certain forms of statistical inference. Other than that, the most visible difference with ordered factors in R is how they're displayed by `ggplot`.
+
+```{r}
+ggplot(diamonds, aes(x = cut,
+                     fill = cut)) + 
+  geom_bar(show.legend = FALSE)
+```
+
+By default, ordered factors are colored using the `viridis` palette, which is has a distinct order to it.  
+
+
+
+
