@@ -1,0 +1,287 @@
+---
+title: "Lasso regression using `tidymodels`"
+description: "Today I'm walking through the code used to produce results in my most recent vid, *Stabilizing regression coefficients with the lasso.*"
+author:
+  - name: Andrew Gard
+date: 2026-10-19
+fig-width: 5
+fig-height: 3
+embed-resources: true
+knitr:
+  opts_chunk:
+    fig.align: center
+---
+
+**The lasso** addresses instability in linear regression models by penalizing larger coefficient values. For a conceptual introduction, check out my explainer [here](https://youtu.be/hBqEECNP5mQ). 
+
+In this post, we'll obtain a lasso model for `solubility` in chemical compounds using data from the `AppliedPredictiveModeling` package, which supports the excellent book of the same name. We'll do this from the machine learning perspective using the `tidymodels` framework. If you haven't worked with `tidymodels` before, I recommend pausing to check out my tutorial [here](https://youtu.be/fRj8dr-aSsU).
+
+The `solubility` data has already been split into training and testing sets, but in each case the explanatory and response variables have been stored separately. We start by resolving this.
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidymodels)
+
+library(AppliedPredictiveModeling)
+data(solubility)
+
+set.seed(0)
+
+sol_train <- solTrainXtrans |> 
+  mutate(solubility = solTrainY)
+sol_test <- solTestXtrans |> 
+  mutate(solubility = solTestY)
+```
+
+The training set includes 951 observations while the test test includes 316. There are 228 total predictors available as we attempt to model the response variable, `solubility`.
+
+Penalized regression in R is typically carried out using the `glmnet()` engine. Since we're using `tidymodels`, we'll rely on the `linear_reg()` wrapper, which standardizes the syntax of modeling functions like `glmnnet()` and ensures their output is compatible with the tools we'll use for tuning and evaluation. 
+
+```{r}
+my_lasso <- linear_reg(
+  engine = "glmnet",
+  mixture = 1, # one for lasso, zero for ridge
+  penalty = tune() # lambda TBD
+  ) 
+```
+
+Since there are no missing values in these sets and the variables are all numeric, little preprocessing needs to be done with this data. The following recipe (which standardizes all predictors and removes any with zero-variance) is added for consistency and clarity.
+
+```{r}
+my_rec <- recipe(solubility ~., data = sol_train) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_numeric_predictors())
+
+my_wf <- workflow(
+  spec = my_lasso,
+  preprocessor = my_rec
+  )
+```
+
+Since the `glmnet()` engine performs standardization by default, `step_normalize()` turns out to be redundant here. 
+
+As a reminder, `tidymodels` separates model specification (accomplished here with `linear_reg()`) from model fitting (which we'll do later). This allows us to incorporate preprocessing in a programmatic way, via a `recipe`, ensuring our steps will be applied consistently whether we're working with the training set, the testing set, or something else entirely.
+
+We determine the best choice for the penalty, $\lambda$, using cross validation.
+
+```{r}
+# create 5 separate 10-fold splits
+folds <- vfold_cv(
+  sol_train,
+  v = 10,
+  repeats = 5
+  ) 
+
+# tune using a default grid of values
+tune_results <- tune_grid(
+  my_wf, 
+  folds
+  ) 
+
+glimpse(tune_results)
+```
+
+The output of `tune_grid()` is a copy of the object created by `vfold_cv()`, that is, a tibble with one row per fold per repeat. This one, however, includes an extra column, `.metrics`, which tracks the performance of models built with different $\lambda$ values. Each element of `tune_results$.metrics` is itself a tibble. 
+
+```{r}
+# for example:
+tune_results$.metrics[[1]]
+```
+
+We can now plot performance versus penalty to visually estimate the best value of $\lambda$.
+
+```{r}
+rmse_path <- collect_metrics(tune_results) |> 
+  filter(.metric == "rmse")
+
+ggplot(rmse_path, aes(x = penalty, y = mean)) + 
+  geom_point() + 
+  geom_line()+
+  scale_x_log10(labels = scales::label_log()) +
+  labs(x = "Penalty", y = "CV error") +
+  theme_minimal() 
+```
+
+We can zoom in on the apparent minimum by specifying a data frame of penalty values for `tune_grid()` to work with. Since the search grid for $\lambda$ must span several orders of magnitude, it's best to specify it using a logarithmic scale, meaning that adjacent values will differ by the same *factor* rather than the same *constant*.
+
+The grid can also be built using functions from the `dials` package, but for me this is usually more trouble than it's worth.
+
+```{r}
+# specify values 
+my_grid <- data.frame(
+  penalty = 10^seq(-4, -1, length.out = 20)
+  )
+
+# repeat tuning and plotting
+tune_results <- tune_grid(
+  my_wf, 
+  folds, 
+  grid = my_grid
+  )
+
+rmse_path <- collect_metrics(tune_results) |> 
+  filter(.metric == "rmse")
+
+ggplot(rmse_path, aes(x = penalty, y = mean)) + 
+  geom_point() + 
+  geom_line() +
+  scale_x_log10(labels = scales::label_log()) +
+  labs(x = "Penalty", y = "Test error") +
+  theme_minimal() +
+  theme_minimal() 
+```
+
+Use `show_best()` to obtain a data frame of the best-performing hyperparameter values. Here we use root mean squared error to measure "best."
+
+```{r}
+show_best(tune_results, metric = "rmse")
+```
+
+Once we're satisfied that we've found a good hyperparameter value, we can insert it into our model with `finalize_workflow()`.
+
+```{r}
+# manual specification (less common)
+my_wf_final <- my_wf |> finalize_workflow(
+  parameters = list(penalty = .00546)
+  ) 
+
+# automated specification (more common)
+best_lambda <- select_best(tune_results, metric = "rmse")
+my_wf_final <- my_wf |> finalize_workflow(best_lambda)
+my_wf_final
+```
+
+A workflow is a set of instructions for building a model from data, not the model itself. To incorporate the training data and create an algorithm for making predictions, use `fit()`. To obtain model coefficients in a tibble, use `broom::tidy()`.
+
+```{r}
+#| message: false
+
+my_wf_fit <- my_wf_final |> 
+  fit(data = sol_train)
+
+tidy(my_wf_fit)
+```
+
+While `predict()` works perfectly well for applying a fitted model to new data, I often prefer another `broom` function: `augment()`. This returns a data frame that includes all relevant explanatory variables as well as the predicted values.
+
+```{r}
+# predictions only
+predict(my_wf_fit, new_data = sol_test) 
+
+# add predictions to df
+sol_test_aug <- augment(my_wf_fit, new_data = sol_test) 
+head(sol_test_aug)
+```
+
+This augmented data frame is particularly convenient when applying assessment functions like `yardstick::rmse()`
+
+```{r}
+rmse(sol_test_aug,
+     truth = solubility,
+     estimate = .pred)
+```
+
+On average, predictions made using this model miss true `solubility` by about .7 units.
+
+## Bonus #1: unpacking the `recipe`
+
+A major advantage to `tidymodels` is the ease with which we can incorporate preprocessing steps like variable standardization. In the above analysis, for instance, we said which steps we wanted to carry out and then forgot all about them, never dealing with $z$-scores directly at all. In this section, we extract those transformed variables.
+
+A `recipe` is a set of instructions for preprocessing data. On its own, it doesn't take into account the training data or perform any transformations. To accomplish the former, use `prep()`. 
+
+```{r}
+rec_prepped <- prep(my_rec)
+rec_prepped
+```
+
+We now hove a *trained* recipe. While previously we only had a generic instruction to compute $z$-scores using the formula
+$$z_{ij} = \frac{x_{ij} - \overline{x}_j}{s_j},$$
+
+now sample means and standard deviations ($\overline{x}_j$ and $s_j$) from the training set have been computed and incorporated into those instructions. This fact is indicated by the word "trained" at the end of the `rec_prepped` printout.
+
+To obtain a tibble of transformed predictors, apply `bake()` to a trained recipe.
+
+```{r}
+bake(rec_prepped, new_data = sol_train) |> 
+  select(
+    HydrophilicFactor,
+    NumAtoms,
+    NumBonds,
+    SurfaceArea1
+    ) 
+```
+
+We could have just as easily applied this recipe to any other set with compatible variables, including the test set. 
+
+## Bonus #2: plotting coefficient trajectories
+
+It's often useful to visualize the trajectories of model coefficients as the penalty increases. Since `tune_grid()` doesn't retain model coefficients, some new code is needed.
+
+```{r}
+# desired penalty values for plot
+lambda_vals <- 10^seq(-6, 1, length.out = 1000)
+
+# model specification. penalty=1 is a placeholder ignored by glmnet()
+lasso_spec2 <- linear_reg(mixture = 1, penalty = 1) |>  
+  set_engine("glmnet", path_values = lambda_vals)
+
+lasso_wf2 <- workflow(
+  spec = lasso_spec2,
+  preprocessor = my_rec
+)
+
+lasso_fit <-
+  lasso_wf2 %>%
+  fit(data = sol_train)
+```
+
+The output of `fit()` is an updated workflow object. In order to get model coefficients for each penalty value specified in `lambda_vals`, we use `extract_fit_engine()` followed by `tidy()`.
+
+```{r}
+glmnet_object <- lasso_fit |> 
+  extract_fit_engine()
+coef_paths <- tidy(glmnet_object)
+coef_paths
+```
+
+For neatness, let's restrict our plot to just a few interesting variables.
+
+```{r}
+vars <- c(
+  "NumBonds",
+  "NumAtoms",
+  "HydrophilicFactor",
+  "SurfaceArea1"
+  )
+
+coef_paths |> filter(term %in% vars) |> 
+ggplot(
+  aes(
+    x = lambda, 
+    y = estimate, 
+    color = term
+    )
+  ) +
+  geom_line() +
+  geom_segment(
+    x = -6,
+    y = 0,
+    xend = 1, 
+    linetype = "dotted"
+    ) +
+  labs(
+    x = "Penalty",
+    y = "Coefficient",
+    color = "Variable"
+    ) +
+  scale_x_log10(labels = scales::label_log()) +
+  scale_color_manual(
+    values = c("#5798A6", "#ED8C3B", "#8050A5", "#4C9F70")
+    ) +
+  theme_minimal() 
+```
+
+
+  
